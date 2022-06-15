@@ -1,6 +1,6 @@
 # this code is mostly terrible. it's quick and dirty and designed for micropython 2014
 
-def chinesischer_restsatz(r, m):
+def chinesischer_restsatz(r, m, prompt_steps=False):
     y_all = list()
     M_all = list()
     m_all = 1
@@ -21,6 +21,8 @@ def chinesischer_restsatz(r, m):
         # y = mod_inv(Mi, m[i])
         y_all.append(y)
         print()
+        if prompt_steps:
+            input('Press enter to proceed')
 
     x = 0
     for i in range(len(M_all)):
