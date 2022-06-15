@@ -145,13 +145,15 @@ def generate_rsa_keys(p, q, e):
 
 
 def rsa_encrypt(m, e, n):
-    print('{0} ** {1} mod {2} ='.format(m, e, n), m ** e % n)
-    return m ** e % n
+    c = m ** e % n
+    print('{0} ** {1} mod {2} ='.format(m, e, n), c)
+    return c
 
 
 def rsa_decrypt(c, d, n):
-    print('{0} ** {1} mod {2} ='.format(c, d, n), c ** d % n)
-    return c ** d % n
+    m = c ** d % n
+    print('{0} ** {1} mod {2} ='.format(c, d, n), m)
+    return m
 
 
 # Spielt RSA einmal durch mit Schlüsselgenerierung, Ver- und Entschlüsselung
@@ -169,6 +171,8 @@ def rsa_complete(p, q, e, m):
     print('Entschlüsselung')
     for i in range(len(c)):
         rsa_decrypt(c[i], d, n)
+
+    return c
 
 
 # Modulare Rechentabelle für [a]addition, [s]ubtraction, [m]ultiplication
@@ -226,7 +230,7 @@ def mod_square(n, primitiv):
             n_rest.append(i)
 
     print()
-    print('Quadratischer Rest: {0}\n'.format(set(rest)))
+    print('Quadratischer Rest: {0}'.format(set(rest)))
     print('Quadratischer nicht Rest: {0}'.format(set(n_rest)))
 
 
