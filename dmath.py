@@ -1,7 +1,16 @@
+# this code is mostly terrible. it's quick and dirty and designed for micropython 2014
+
+# does the extended euclidian algorithm and returns the relevant results from the last line before b becomes 0.
+# in addition, the last u and v values (which are returned in slot 1 and 2) are made positive and returned in slot 3 and 4.
+# this lets you get the first positive multiplicative inverse of a to b and b to a as well.
 def EEA(a, b):
     if a < b:
         print('a < b in euklidischem Algorithmus, swapping them and proceeding')
+        print('a = {} | b = {}'.format(a, b))
         a, b = b, a
+
+    orig_a = a
+    orig_b = b
 
     u_old, u = 1, 0
     v_old, v = 0, 1
@@ -12,10 +21,39 @@ def EEA(a, b):
         v, v_old = v_old - q * v, v
         a, b = b, a % b
         print('{0:>5}{1:>6}{2:>6}{3:>6}'.format(a, q, u_old, v_old))
+
     print()
-    return a, u_old, v_old
+    print('{} * {} + {} * {} = 1'.format(u_old, orig_a, v_old, orig_b))
+
+    x = None
+    y = None
+    if a == 1:  # a & b sind teilerfremd, höchstwahrscheinlich EEA für die modulare inverse verwendet -> positiv machen
+        x = u_old
+        while x < 0:
+            x += orig_b
+        y = v_old
+        while y < 0:
+            y += orig_a
+
+        print('Falls Modulare Inv gesucht: ')
+        print('   {0} * {1} === 1 mod {2}'.format(x, orig_a, orig_b))
+        print('   {0} * {1} === 1 mod {2}'.format(y, orig_b, orig_a))
+
+    return a, u_old, v_old, x, y
 
 
+# returns the first positive modular inverse for z
+# uses ggT which is basically EEA without printing, makes sure it's positiv, then returns so it's redundant to the last two parameters of EEA
+def mod_inv(base, z):
+    y = ggT(base, z)[2]
+    while y < 0:
+        y += base
+    print('{0} * {1} === 1 mod {2}'.format(z, y, base))
+
+    return y
+
+
+# I think redundant as it does the same as EEA just without printing
 def ggT(a, b):
     if a < b:
         print('a < b in ggT calc, swapping them and proceeding')
@@ -47,16 +85,6 @@ def chain(*iterables):
     for it in iterables:
         for each in it:
             yield each
-
-
-# returns the first positive modular inverse for z
-def mod_inv(base, z):
-    y = ggT(base, z)[2]
-    while y < 0:
-        y += base
-    print('{0} * {1} === 1 mod {2}'.format(z, y, base))
-
-    return y
 
 
 # non-updatable, very very very simple Counter polyfill
@@ -96,15 +124,18 @@ def phi(n):
 def generate_rsa_keys(p, q, e):
     n = p * q
     phi_n = (p - 1) * (q - 1)
-    t, x, d = EEA(phi_n, e)
+    t, _, _, _, d = EEA(phi_n, e)
+    # t=ggt, d=inv of e to mod phi_n
+
+    print('# unnötig: ', end='')
+    if phi_n != phi(n):
+        print('ERROR (p-1)*(q-1) gibt nicht phi(n) ALSO SIND P UND/ODER Q KEINE PRIMZAHLEN')
+        return None
 
     print('ggT({0}, {1}) = {2}\n'.format(phi_n, e, t))
     if t != 1:
-        print('e ({}) IST NICHT TEILERFREMD ZU PHI VON n (phi({}) = {})!!'.format(e, n, phi_n))
+        print('ERROR e ({}) IST NICHT TEILERFREMD ZU PHI VON n (phi({}) = {})!!'.format(e, n, phi_n))
         return None
-
-    while d < 0:
-        d += n
 
     print('d = {0}, da {0} * {1} = 1 mod {2}\n'.format(d, e, phi_n))
 
@@ -199,17 +230,17 @@ def mod_square(n, primitiv):
 
 def square_and_multiply(basis, potenz, mod):
     binary = bin(potenz)
-    print('binary: ', binary[2:])
+    print('binary: ', binary[2:])  # cut off prefix
     qm_string = ''
     result = ''
     temp_result = basis
-    for s in binary[2:]:
+    for s in binary[2:]:  # cut off prefix
         if s == '1':
             qm_string += 'QM'
         else:
             qm_string += 'Q'
 
-    qm_string = qm_string[2:]
+    qm_string = qm_string[2:]  # cut off first QM (first bit is always 1)
     print('QM_String', qm_string)
 
     for s in qm_string:
