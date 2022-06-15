@@ -1,4 +1,8 @@
 def EEA(a, b):
+    if a < b:
+        print('a < b in euklidischem Algorithmus, swapping them and proceeding')
+        a, b = b, a
+
     u_old, u = 1, 0
     v_old, v = 0, 1
     print('{0:>5}     - {1:>5} {2:>5}'.format(a, u_old, v_old))
@@ -13,6 +17,10 @@ def EEA(a, b):
 
 
 def ggT(a, b):
+    if a < b:
+        print('a < b in ggT calc, swapping them and proceeding')
+        a, b = b, a
+
     if b == 0:
         return a, 1, 0
     else:
@@ -34,25 +42,21 @@ def faktorisiere(n):
     return l
 
 
+# itertools polyfill
 def chain(*iterables):
     for it in iterables:
         for each in it:
             yield each
 
 
-def modInverse(a, m):
-    for x in range(1, m):
-        if (((a % m) * (x % m)) % m == 1):
-            return x
-    return -1
+# returns the first positive modular inverse for z
+def mod_inv(base, z):
+    y = ggT(base, z)[2]
+    while y < 0:
+        y += base
+    print('{0} * {1} === 1 mod {2}'.format(z, y, base))
 
-
-def modInvSteps(mod, Z):
-    for i in Z:
-        y = ggT(mod, i)[2]
-        while y < 0:
-            y += mod
-        print('{0} * {1} ** -1 = 1 mod {2}'.format(i, y, mod))
+    return y
 
 
 # non-updatable, very very very simple Counter polyfill
@@ -73,63 +77,69 @@ class Counter:
         return self._counts.__getitem__(item)
 
 
-def phi_m(n):
+def phi(n):
     faktoren = faktorisiere(n)
     r = Counter(faktoren)
 
-    phi = 1
+    p = 1
     for i in r:
-        phi *= (i - 1) * i ** (r[i] - 1)
+        p *= (i - 1) * i ** (r[i] - 1)
         print('({1} - 1) * {1}^{0}'.format(r[i] - 1, i), end=' ')
         if not i == faktoren[-1]:
             print('*', end=' ')
 
-    print('= {0}'.format(phi), end='')
+    print('= {0}'.format(p), end='')
     print()
-    return phi
+    return p
 
 
-def generateKeys(p, q, e):
+def generate_rsa_keys(p, q, e):
     n = p * q
     phi_n = (p - 1) * (q - 1)
     t, x, d = EEA(phi_n, e)
 
+    print('ggT({0}, {1}) = {2}\n'.format(phi_n, e, t))
+    if t != 1:
+        print('e ({}) IST NICHT TEILERFREMD ZU PHI VON n (phi({}) = {})!!'.format(e, n, phi_n))
+        return None
+
     while d < 0:
         d += n
 
-    print('ggT({0}, {1}) = {2}\n'.format(phi_n, e, t))
     print('d = {0}, da {0} * {1} = 1 mod {2}\n'.format(d, e, phi_n))
 
     return (n, e), d
 
 
-def encrypt(m, e, n):
+def rsa_encrypt(m, e, n):
     print('{0} ** {1} mod {2} ='.format(m, e, n), m ** e % n)
     return m ** e % n
 
 
-def decrypt(c, d, n):
+def rsa_decrypt(c, d, n):
     print('{0} ** {1} mod {2} ='.format(c, d, n), c ** d % n)
     return c ** d % n
 
 
-def cryptoSys(p, q, e, m):
-    keys = generateKeys(p, q, e)
+# Spielt RSA einmal durch mit Schlüsselgenerierung, Ver- und Entschlüsselung
+def rsa_complete(p, q, e, m):
+    keys = generate_rsa_keys(p, q, e)
     n = keys[0][0]
     d = keys[1]
 
     print('Verschlüsselung')
     c = list()
     for i in range(len(m)):
-        c.append(encrypt(m[i], e, n))
+        c.append(rsa_encrypt(m[i], e, n))
 
     print()
     print('Entschlüsselung')
     for i in range(len(c)):
-        decrypt(c[i], d, n)
+        rsa_decrypt(c[i], d, n)
 
 
-def zTable(n, operator):
+# Modulare Rechentabelle für [a]addition, [s]ubtraction, [m]ultiplication
+def mod_table(n, operator):
     for i in range(-1, n):
         print('{0:>3}'.format(i), end=' ')
     print()
@@ -146,7 +156,8 @@ def zTable(n, operator):
         print()
 
 
-def zSq(n, primitiv):
+# Modulares Quadrieren mit quadratischen Resten und Nichtresten. Entweder für alle in Z_n oder nur in den primitiven Elementen Z*_n
+def mod_square(n, primitiv):
     z = list()
     r = list()
     # x Zeile
@@ -161,8 +172,8 @@ def zSq(n, primitiv):
 
     # x *mod x Zeile
     print()
-    for i in range(len(z)):
-        res = (z[i] ** 2) % n
+    for i in z:
+        res = (i ** 2) % n
         r.append(res)
         print('{0:>3}'.format(res), end=' ')
     print()
@@ -172,13 +183,13 @@ def zSq(n, primitiv):
     n_rest = list()
 
     for i in r:
-        if (i in z) and (r.count(i) == 4):
+        if i in z:  # checking for how many times they appear could tell you whether n is prime or a product of two primes
             rest.append(i)
         else:
             n_rest.append(i)
 
     for i in z:
-        if not i in r:
+        if i not in r:
             n_rest.append(i)
 
     print()
@@ -186,58 +197,7 @@ def zSq(n, primitiv):
     print('Quadratischer nicht Rest: {0}'.format(set(n_rest)))
 
 
-def QAndM(m, e, n, o=None, x=0):
-    if o == None:
-        o = bin(e)[3:]
-    if x == 0:
-        x = m
-
-    print(x)
-
-    if not o:
-        return x
-    elif o[0] == '1':
-        print(x ** 2 % n)
-        return QAndM(m, e, n, o[1:], x ** 2 * m % n)
-    elif o[0] == '0':
-        return QAndM(m, e, n, o[1:], x ** 2 % n)
-
-
-def CR(r, m):
-    x_all = list()
-    M_all = list()
-    m_all = 1
-    for i in m:
-        m_all *= i
-        print(i, end=' ')
-        if not i == m[-1]:
-            print('*', end=' ')
-
-    print('= {0} = m \n'.format(m_all))
-
-    for i in range(len(r)):
-        M = m_all / m[i]
-        print('M_{0} = {2}/{1} = {3} \n'.format(i + 1, m[i], m_all, M))
-
-        M_all.append(M)
-        t, x, y = EEA(M, m[i])
-        while x < 0:
-            x += m[i]
-        x_all.append(x)
-
-        print('{1} * {2} = 1 mod {0} \n'.format(m[i], M, x))
-
-    X = 0
-    for i in range(len(M_all)):
-        X += r[i] * M_all[i] * x_all[i]
-        print('{0} * {1} * {2}'.format(r[i], M_all[i], x_all[i]), end=' ')
-        if i < len(M_all) - 1:
-            print('+', end=' ')
-    print()
-    print('{1} = {0} mod({2})'.format(X % m_all, X, m_all))
-
-
-def sqm(basis, potenz, mod):
+def square_and_multiply(basis, potenz, mod):
     binary = bin(potenz)
     print('binary: ', binary[2:])
     qm_string = ''
@@ -256,16 +216,52 @@ def sqm(basis, potenz, mod):
         if s == 'Q':
             result += '{0} Q-> '.format(temp_result)
             temp_result_squared = temp_result ** 2
-            temp_result = (temp_result_squared) % mod
+            temp_result = temp_result_squared % mod
             result += '{0} = '.format(temp_result_squared)
         else:
             result += '{0} M-> '.format(temp_result)
             temp_result_multiplied = temp_result * basis
-            temp_result = (temp_result_multiplied) % mod
+            temp_result = temp_result_multiplied % mod
             result += '{0} = '.format(temp_result_multiplied)
     result += '{0}'.format(temp_result % mod)
 
     print(result)
+    return result
+
+
+def chinesischer_restsatz(r, m):
+    y_all = list()
+    M_all = list()
+    m_all = 1
+    for i in m:
+        m_all *= i
+        print(i, end=' ')
+        if not i == m[-1]:
+            print('*', end=' ')
+
+    print('= {0} = m \n'.format(m_all))
+
+    for i in range(len(r)):
+        Mi = m_all / m[i]
+        print('M_{0} = {1}/{2} = {3} \n'.format(i + 1, m_all, m[i], Mi))
+
+        M_all.append(Mi)
+        # t, x, y = EEA(Mi, m[i])
+        # while x < 0:
+        #     x += m[i]
+        y = mod_inv(Mi, m[i])
+        y_all.append(y)
+
+    x = 0
+    for i in range(len(M_all)):
+        x += r[i] * M_all[i] * y_all[i]
+        print('{0} * {1} * {2}'.format(r[i], M_all[i], y_all[i]), end=' ')
+        if i < len(M_all) - 1:
+            print('+', end=' ')
+    print('=')
+    print('{0} = {1} mod({2})'.format(x, x % m_all, m_all))
+
+    return x
 
 
 if __name__ == '__main__':
@@ -274,10 +270,8 @@ if __name__ == '__main__':
     print(EEA(199, 74))
 
     # Modulare Inverse
-    print("--- Mod inverse (1) ---")
-    print(modInverse(5, 9))
-    print("--- Mod inverse (2) ---")
-    modInvSteps(9, (5,))
+    print("--- Mod inverse ---")
+    mod_inv(9, [5, 7])
 
     # ggT
     print("--- ggT ---")
@@ -287,41 +281,39 @@ if __name__ == '__main__':
     print("--- Faktorisieren ---")
     print(faktorisiere(120))
 
-    # Eulersche Phi Funktion TODO mit Modulo? wieso das _m
+    # Eulersche Phi Funktion
     print("--- Phi ---")
-    print(phi_m(20))
+    print(phi(491 * 223))
 
     # RSA Public private key generation
     # e muss teilerfremd zu phi von n=pq ist
     print("--- RSA Manuell ---")
-    (n, e), d = generateKeys(5, 7, 17)
+    (n, e), d = generate_rsa_keys(5, 7, 17)
     print("n={0}, e={1}, d={2}".format(n, e, d))
 
     # RSA encryption
-    c = encrypt(999, e, n)
+    c = rsa_encrypt(999, e, n)
     print("c=", c)
 
     # RSA decryption
-    print(decrypt(c, d, n))
+    print(rsa_decrypt(c, d, n))
 
     # RSA durchgespielt
     print("--- RSA ---")
-    cryptoSys(5, 7, 17, (999,))
+    rsa_complete(5, 7, 17, (999,))
 
     # Modulare Rechentabelle aufzeigen
     print("--- Mod Rechentabelle ---")
-    zTable(5, 'a')  # [a]addition, [s]ubtraction, [m]ultiplication
+    mod_table(5, 'a')  # [a]addition, [s]ubtraction, [m]ultiplication
 
     # Quadrat in Zn* oder Zn
-    print("--- Quadrat in Zn* oder Zn ---")
-    zSq(23, primitiv=True)
+    print("--- Quadrat in Zn* oder Zn mit resten und nichtresten ---")
+    mod_square(19, primitiv=True)
 
     # Square-and-multiply
-    print("--- Square-and-multiply (1) ---")
-    print(QAndM(89, 72, 191))
-    print("--- Square-and-multiply (2) ---")
-    sqm(89, 72, 191)
+    print("--- Square-and-multiply ---")
+    square_and_multiply(89, 72, 191)
 
     # Chinesischer Restsatz
     print("--- Chinesischer Restsatz ---")
-    CR((1, 3), (2, 4))
+    chinesischer_restsatz((1, 3), (2, 4))
