@@ -1,12 +1,10 @@
 import sys
-print(sys.version)
-print(sys.platform)
-print(sys.version_info)
 
-# from dmath import generate_rsa_keys
-
-with open("/documents/apps/dmath.py.tns", "r") as file:
-    exec(file.read())  # define functions?
+if sys.platform == "nspire":
+    with open("/documents/apps/dmath.py.tns", "r") as file:
+        exec(file.read())
+else:
+    from dmath import generate_rsa_keys
 
 p = int(input('p (Primzahl): '))
 q = int(input('q (andere Primzahl): '))
