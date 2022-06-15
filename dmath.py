@@ -106,10 +106,15 @@ class Counter:
     def __getitem__(self, item):
         return self._counts.__getitem__(item)
 
+    def __str__(self):
+        return str(self._counts)
+
 
 def phi(n):
     faktoren = faktorisiere(n)
     r = Counter(faktoren)
+
+    print('Primfaktorzerlegung:', r)
 
     p = 1
     for i in r:
@@ -129,7 +134,7 @@ def generate_rsa_keys(p, q, e):
     t, _, _, _, d = EEA(phi_n, e)
     # t=ggt, d=inv of e to mod phi_n
 
-    print('# unnötig: ', end='')
+    print('# phi berechnung; kann ignoriert werden: ')
     if phi_n != phi(n):
         print('ERROR (p-1)*(q-1) gibt nicht phi(n) ALSO SIND P UND/ODER Q KEINE PRIMZAHLEN')
         return None
@@ -177,7 +182,8 @@ def rsa_complete(p, q, e, m):
 
 # Modulare Rechentabelle für [a]addition, [s]ubtraction, [m]ultiplication
 def mod_table(n, operator):
-    for i in range(-1, n):
+    print('{0:>3}'.format('+' if operator == 'a' else '-' if operator == 's' else '*' if operator == 'm' else 'YOU FUCKED IT'), end=' ')
+    for i in range(n):
         print('{0:>3}'.format(i), end=' ')
     print()
     for i in range(n):
