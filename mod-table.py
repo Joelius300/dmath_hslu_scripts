@@ -7,6 +7,6 @@ else:
     from dmath import mod_table
 
 n = int(input('n: '))
-o = input('Operator ([a]addition, [s]ubtraction, [m]ultiplication): ')
+o = input('Operator (+, -, *): ')
 
 mod_table(n, o)

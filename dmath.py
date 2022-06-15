@@ -120,21 +120,20 @@ def mod_square(n, primitiv):
     print('Quadratischer nicht Rest: {0}'.format(set(n_rest)))
 
 
-# Modulare Rechentabelle für [a]addition, [s]ubtraction, [m]ultiplication
+# Modulare Rechentabelle für aaddition=+, subtraction=-, multiplication=*
 def mod_table(n, operator):
-    print('{0:>3}'.format(
-        '+' if operator == 'a' else '-' if operator == 's' else '*' if operator == 'm' else 'YOU FUCKED IT'), end=' ')
+    print(' ', operator, end=' ')
     for i in range(n):
         print('{0:>3}'.format(i), end=' ')
     print()
     for i in range(n):
         print('{0:>3}'.format(i), end=' ')
         for x in range(n):
-            if operator == 'a':
+            if operator == '+':
                 print('{0:>3}'.format((x + i) % n), end=' ')
-            elif operator == 'm':
+            elif operator == '*':
                 print('{0:>3}'.format((x * i) % n), end=' ')
-            elif operator == 's':
+            elif operator == '-':
                 print('{0:>3}'.format((x - i) % n), end=' ')
 
         print()
