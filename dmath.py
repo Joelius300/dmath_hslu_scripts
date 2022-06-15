@@ -295,56 +295,56 @@ def chinesischer_restsatz(r, m):
     return x
 
 
-if __name__ == '__main__':
-    # Erweiterter Euklidischer Algorithmus
-    print("--- Erweiterter Euklidischer Algorithmus ---")
-    print(EEA(199, 74))
-
-    # Modulare Inverse
-    print("--- Mod inverse ---")
-    mod_inv(9, 5)
-
-    # ggT
-    print("--- ggT ---")
-    print(ggT(9, 15))
-
-    # Faktorisieren
-    print("--- Faktorisieren ---")
-    print(faktorisiere(120))
-
-    # Eulersche Phi Funktion
-    print("--- Phi ---")
-    print(phi(491 * 223))
-
-    # RSA Public private key generation
-    # e muss teilerfremd zu phi von n=pq ist
-    print("--- RSA Manuell ---")
-    (n, e), d = generate_rsa_keys(5, 7, 17)
-    print("n={0}, e={1}, d={2}".format(n, e, d))
-
-    # RSA encryption
-    c = rsa_encrypt(999, e, n)
-    print("c=", c)
-
-    # RSA decryption
-    print(rsa_decrypt(c, d, n))
-
-    # RSA durchgespielt
-    print("--- RSA ---")
-    rsa_complete(5, 7, 17, (999,))
-
-    # Modulare Rechentabelle aufzeigen
-    print("--- Mod Rechentabelle ---")
-    mod_table(5, 'a')  # [a]addition, [s]ubtraction, [m]ultiplication
-
-    # Quadrat in Zn* oder Zn
-    print("--- Quadrat in Zn* oder Zn mit resten und nichtresten ---")
-    mod_square(19, primitiv=True)
-
-    # Square-and-multiply
-    print("--- Square-and-multiply ---")
-    square_and_multiply(89, 72, 191)
-
-    # Chinesischer Restsatz
-    print("--- Chinesischer Restsatz ---")
-    chinesischer_restsatz((1, 2, 3, 4), (2, 3, 5, 11))
+# if __name__ == '__main__':
+#     # Erweiterter Euklidischer Algorithmus
+#     print("--- Erweiterter Euklidischer Algorithmus ---")
+#     print(EEA(199, 74))
+#
+#     # Modulare Inverse
+#     print("--- Mod inverse ---")
+#     mod_inv(9, 5)
+#
+#     # ggT
+#     print("--- ggT ---")
+#     print(ggT(9, 15))
+#
+#     # Faktorisieren
+#     print("--- Faktorisieren ---")
+#     print(faktorisiere(120))
+#
+#     # Eulersche Phi Funktion
+#     print("--- Phi ---")
+#     print(phi(491 * 223))
+#
+#     # RSA Public private key generation
+#     # e muss teilerfremd zu phi von n=pq ist
+#     print("--- RSA Manuell ---")
+#     (n, e), d = generate_rsa_keys(5, 7, 17)
+#     print("n={0}, e={1}, d={2}".format(n, e, d))
+#
+#     # RSA encryption
+#     c = rsa_encrypt(999, e, n)
+#     print("c=", c)
+#
+#     # RSA decryption
+#     print(rsa_decrypt(c, d, n))
+#
+#     # RSA durchgespielt
+#     print("--- RSA ---")
+#     rsa_complete(5, 7, 17, (999,))
+#
+#     # Modulare Rechentabelle aufzeigen
+#     print("--- Mod Rechentabelle ---")
+#     mod_table(5, 'a')  # [a]addition, [s]ubtraction, [m]ultiplication
+#
+#     # Quadrat in Zn* oder Zn
+#     print("--- Quadrat in Zn* oder Zn mit resten und nichtresten ---")
+#     mod_square(19, primitiv=True)
+#
+#     # Square-and-multiply
+#     print("--- Square-and-multiply ---")
+#     square_and_multiply(89, 72, 191)
+#
+#     # Chinesischer Restsatz
+#     print("--- Chinesischer Restsatz ---")
+#     chinesischer_restsatz((1, 2, 3, 4), (2, 3, 5, 11))
