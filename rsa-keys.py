@@ -1,4 +1,4 @@
-# from dmath import generate_rsa_keys apparently import don't work
+# from dmath import generate_rsa_keys apparently imports don't work
 
 with open("/documents/apps/dmath.py.tns", "r") as file:
     exec(file.read())  # define functions?

@@ -5,9 +5,10 @@
 # this lets you get the first positive multiplicative inverse of a to b and b to a as well.
 def EEA(a, b):
     if a < b:
-        print('a < b in euklidischem Algorithmus, swapping them and proceeding')
-        print('a = {} | b = {}'.format(a, b))
-        a, b = b, a
+        print('a < b in EEA, may not work!')
+    #     print('a < b in euklidischem Algorithmus, swapping them and proceeding')
+    #     print('a = {} | b = {}'.format(a, b))
+    #     a, b = b, a
 
     orig_a = a
     orig_b = b
@@ -56,8 +57,9 @@ def mod_inv(base, z):
 # I think redundant as it does the same as EEA just without printing
 def ggT(a, b):
     if a < b:
-        print('a < b in ggT calc, swapping them and proceeding')
-        a, b = b, a
+        print('a < b in ggT calc, may not work!')
+        # print('a < b in ggT calc, swapping them and proceeding')
+        # a, b = b, a
 
     if b == 0:
         return a, 1, 0
@@ -272,15 +274,14 @@ def chinesischer_restsatz(r, m):
     print('= {0} = m \n'.format(m_all))
 
     for i in range(len(r)):
-        Mi = m_all / m[i]
+        Mi = m_all // m[i]
         print('M_{0} = {1}/{2} = {3} \n'.format(i + 1, m_all, m[i], Mi))
 
         M_all.append(Mi)
-        # t, x, y = EEA(Mi, m[i])
-        # while x < 0:
-        #     x += m[i]
-        y = mod_inv(Mi, m[i])
+        _, _, _, y, _ = EEA(Mi, m[i])
+        # y = mod_inv(Mi, m[i])
         y_all.append(y)
+        print()
 
     x = 0
     for i in range(len(M_all)):
@@ -301,7 +302,7 @@ if __name__ == '__main__':
 
     # Modulare Inverse
     print("--- Mod inverse ---")
-    mod_inv(9, [5, 7])
+    mod_inv(9, 5)
 
     # ggT
     print("--- ggT ---")
@@ -346,4 +347,4 @@ if __name__ == '__main__':
 
     # Chinesischer Restsatz
     print("--- Chinesischer Restsatz ---")
-    chinesischer_restsatz((1, 3), (2, 4))
+    chinesischer_restsatz((1, 2, 3, 4), (2, 3, 5, 11))
