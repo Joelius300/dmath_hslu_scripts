@@ -1,4 +1,7 @@
-from dmath import generate_rsa_keys
+# from dmath import generate_rsa_keys apparently import don't work
+
+with open("/documents/dmath.py.tns", "r") as file:
+    exec(file.read())  # define functions?
 
 p = int(input('p (Primzahl): '))
 q = int(input('q (andere Primzahl): '))
