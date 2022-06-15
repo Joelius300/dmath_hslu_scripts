@@ -1,5 +1,39 @@
 # this code is mostly terrible. it's quick and dirty and designed for micropython 2014
 
+def chinesischer_restsatz(r, m):
+    y_all = list()
+    M_all = list()
+    m_all = 1
+    for i in m:
+        m_all *= i
+        print(i, end=' ')
+        if not i == m[-1]:
+            print('*', end=' ')
+
+    print('= {0} = m \n'.format(m_all))
+
+    for i in range(len(r)):
+        Mi = m_all // m[i]
+        print('M_{0} = {1}/{2} = {3} \n'.format(i + 1, m_all, m[i], Mi))
+
+        M_all.append(Mi)
+        _, _, _, y, _ = EEA(Mi, m[i])
+        # y = mod_inv(Mi, m[i])
+        y_all.append(y)
+        print()
+
+    x = 0
+    for i in range(len(M_all)):
+        x += r[i] * M_all[i] * y_all[i]
+        print('{0} * {1} * {2}'.format(r[i], M_all[i], y_all[i]), end=' ')
+        if i < len(M_all) - 1:
+            print('+', end=' ')
+    print('=')
+    print('{0} = {1} mod({2})'.format(x, x % m_all, m_all))
+
+    return x
+
+
 # does the extended euclidian algorithm and returns the relevant results from the last line before b becomes 0.
 # in addition, the last u and v values (which are returned in slot 1 and 2) are made positive and returned in slot 3 and 4.
 # this lets you get the first positive multiplicative inverse of a to b and b to a as well.
@@ -43,71 +77,65 @@ def EEA(a, b):
     return a, u_old, v_old, x, y
 
 
-# returns the first positive modular inverse for z
-# uses ggT which is basically EEA without printing, makes sure it's positiv, then returns so it's redundant to the last two parameters of EEA
-def mod_inv(base, z):
-    y = ggT(base, z)[2]
-    while y < 0:
-        y += base
-    print('{0} * {1} === 1 mod {2}'.format(z, y, base))
+# Modulares Quadrieren mit quadratischen Resten und Nichtresten. Entweder für alle in Z_n oder nur in den primitiven Elementen Z*_n
+def mod_square(n, primitiv):
+    z = list()
+    r = list()
+    # x Zeile
+    for i in range(1, n):
+        if primitiv:
+            if ggT(n, i)[0] == 1:
+                z.append(i)
+                print('{0:>3}'.format(i), end=' ')
+        else:
+            z.append(i)
+            print('{0:>3}'.format(i), end=' ')
 
-    return y
+    # x *mod x Zeile
+    print()
+    for i in z:
+        res = (i ** 2) % n
+        r.append(res)
+        print('{0:>3}'.format(res), end=' ')
+    print()
 
+    # Restklassen
+    rest = list()
+    n_rest = list()
 
-# I think redundant as it does the same as EEA just without printing
-def ggT(a, b):
-    if a < b:
-        print('a < b in ggT calc, may not work!')
-        # print('a < b in ggT calc, swapping them and proceeding')
-        # a, b = b, a
+    for i in r:
+        if i in z:  # checking for how many times they appear could tell you whether n is prime or a product of two primes
+            rest.append(i)
+        else:
+            n_rest.append(i)
 
-    if b == 0:
-        return a, 1, 0
-    else:
-        g, u, v = ggT(b, a % b)
-        q = a // b
-        return g, v, u - q * v
+    for i in z:
+        if i not in r:
+            n_rest.append(i)
 
-
-def faktorisiere(n):
-    l = list()  # Lösungsmenge
-    # Auf Teilbarkeit durch 2, und alle ungeraden Zahlen von 3..n/2 testen
-    for i in chain([2], range(3, n // 2 + 1, 2)):
-        # Ein Teiler kann mehrfach vorkommen (z.B. 4 = 2 * 2), deswegen:
-        while n % i == 0:
-            l.append(i)
-            n = n // i
-        if i > n:  # Alle Teiler gefunden? Dann Abbruch.
-            break
-    return l
-
-
-# itertools polyfill
-def chain(*iterables):
-    for it in iterables:
-        for each in it:
-            yield each
+    print()
+    print('Quadratischer Rest: {0}'.format(set(rest)))
+    print('Quadratischer nicht Rest: {0}'.format(set(n_rest)))
 
 
-# non-updatable, very very very simple Counter polyfill
-class Counter:
-    def __init__(self, iterable):
-        self._counts = dict()
-        for x in iterable:
-            if self._counts.get(x):
-                self._counts[x] += 1
-            else:
-                self._counts[x] = 1
+# Modulare Rechentabelle für [a]addition, [s]ubtraction, [m]ultiplication
+def mod_table(n, operator):
+    print('{0:>3}'.format(
+        '+' if operator == 'a' else '-' if operator == 's' else '*' if operator == 'm' else 'YOU FUCKED IT'), end=' ')
+    for i in range(n):
+        print('{0:>3}'.format(i), end=' ')
+    print()
+    for i in range(n):
+        print('{0:>3}'.format(i), end=' ')
+        for x in range(n):
+            if operator == 'a':
+                print('{0:>3}'.format((x + i) % n), end=' ')
+            elif operator == 'm':
+                print('{0:>3}'.format((x * i) % n), end=' ')
+            elif operator == 's':
+                print('{0:>3}'.format((x - i) % n), end=' ')
 
-    def __iter__(self):
-        # return keys of counted items, sorted by their count descending
-        return (x for (x, _) in sorted(self._counts.items(), key=lambda item: item[1], reverse=True))
-
-    def __getitem__(self, item):
-        return self._counts.__getitem__(item)
-
-    def __str__(self):
-        return str(self._counts)
+        print()
 
 
 def phi(n):
@@ -126,6 +154,19 @@ def phi(n):
     print('= {0}'.format(p), end='')
     print()
     return p
+
+
+def faktorisiere(n):
+    l = list()
+    # Auf Teilbarkeit durch 2, und alle ungeraden Zahlen von 3..n/2 testen
+    for i in chain([2], range(3, n // 2 + 1, 2)):
+        # Ein Teiler kann mehrfach vorkommen (z.B. 4 = 2 * 2), deswegen:
+        while n % i == 0:
+            l.append(i)
+            n = n // i
+        if i > n:  # Alle Teiler gefunden? Dann Abbruch.
+            break
+    return l
 
 
 def generate_rsa_keys(p, q, e):
@@ -180,66 +221,6 @@ def rsa_complete(p, q, e, m):
     return c
 
 
-# Modulare Rechentabelle für [a]addition, [s]ubtraction, [m]ultiplication
-def mod_table(n, operator):
-    print('{0:>3}'.format('+' if operator == 'a' else '-' if operator == 's' else '*' if operator == 'm' else 'YOU FUCKED IT'), end=' ')
-    for i in range(n):
-        print('{0:>3}'.format(i), end=' ')
-    print()
-    for i in range(n):
-        print('{0:>3}'.format(i), end=' ')
-        for x in range(n):
-            if operator == 'a':
-                print('{0:>3}'.format((x + i) % n), end=' ')
-            elif operator == 'm':
-                print('{0:>3}'.format((x * i) % n), end=' ')
-            elif operator == 's':
-                print('{0:>3}'.format((x - i) % n), end=' ')
-
-        print()
-
-
-# Modulares Quadrieren mit quadratischen Resten und Nichtresten. Entweder für alle in Z_n oder nur in den primitiven Elementen Z*_n
-def mod_square(n, primitiv):
-    z = list()
-    r = list()
-    # x Zeile
-    for i in range(1, n):
-        if primitiv:
-            if ggT(n, i)[0] == 1:
-                z.append(i)
-                print('{0:>3}'.format(i), end=' ')
-        else:
-            z.append(i)
-            print('{0:>3}'.format(i), end=' ')
-
-    # x *mod x Zeile
-    print()
-    for i in z:
-        res = (i ** 2) % n
-        r.append(res)
-        print('{0:>3}'.format(res), end=' ')
-    print()
-
-    # Restklassen
-    rest = list()
-    n_rest = list()
-
-    for i in r:
-        if i in z:  # checking for how many times they appear could tell you whether n is prime or a product of two primes
-            rest.append(i)
-        else:
-            n_rest.append(i)
-
-    for i in z:
-        if i not in r:
-            n_rest.append(i)
-
-    print()
-    print('Quadratischer Rest: {0}'.format(set(rest)))
-    print('Quadratischer nicht Rest: {0}'.format(set(n_rest)))
-
-
 def square_and_multiply(basis, potenz, mod):
     binary = bin(potenz)
     print('binary: ', binary[2:])  # cut off prefix
@@ -271,39 +252,58 @@ def square_and_multiply(basis, potenz, mod):
     print(result)
 
 
-def chinesischer_restsatz(r, m):
-    y_all = list()
-    M_all = list()
-    m_all = 1
-    for i in m:
-        m_all *= i
-        print(i, end=' ')
-        if not i == m[-1]:
-            print('*', end=' ')
+# returns the first positive modular inverse for z
+# uses ggT which is basically EEA without printing, makes sure it's positiv, then returns so it's redundant to the last two parameters of EEA
+def mod_inv(base, z):
+    y = ggT(base, z)[2]
+    while y < 0:
+        y += base
+    print('{0} * {1} === 1 mod {2}'.format(z, y, base))
 
-    print('= {0} = m \n'.format(m_all))
+    return y
 
-    for i in range(len(r)):
-        Mi = m_all // m[i]
-        print('M_{0} = {1}/{2} = {3} \n'.format(i + 1, m_all, m[i], Mi))
 
-        M_all.append(Mi)
-        _, _, _, y, _ = EEA(Mi, m[i])
-        # y = mod_inv(Mi, m[i])
-        y_all.append(y)
-        print()
+# I think redundant as it does the same as EEA just without printing
+def ggT(a, b):
+    if a < b:
+        print('a < b in ggT calc, may not work!')
+        # print('a < b in ggT calc, swapping them and proceeding')
+        # a, b = b, a
 
-    x = 0
-    for i in range(len(M_all)):
-        x += r[i] * M_all[i] * y_all[i]
-        print('{0} * {1} * {2}'.format(r[i], M_all[i], y_all[i]), end=' ')
-        if i < len(M_all) - 1:
-            print('+', end=' ')
-    print('=')
-    print('{0} = {1} mod({2})'.format(x, x % m_all, m_all))
+    if b == 0:
+        return a, 1, 0
+    else:
+        g, u, v = ggT(b, a % b)
+        q = a // b
+        return g, v, u - q * v
 
-    return x
 
+# itertools polyfill
+def chain(*iterables):
+    for it in iterables:
+        for each in it:
+            yield each
+
+
+# non-updatable, very very very simple Counter polyfill
+class Counter:
+    def __init__(self, iterable):
+        self._counts = dict()
+        for x in iterable:
+            if self._counts.get(x):
+                self._counts[x] += 1
+            else:
+                self._counts[x] = 1
+
+    def __iter__(self):
+        # return keys of counted items, sorted by their count descending
+        return (x for (x, _) in sorted(self._counts.items(), key=lambda item: item[1], reverse=True))
+
+    def __getitem__(self, item):
+        return self._counts.__getitem__(item)
+
+    def __str__(self):
+        return str(self._counts)
 
 # if __name__ == '__main__':
 #     # Erweiterter Euklidischer Algorithmus
