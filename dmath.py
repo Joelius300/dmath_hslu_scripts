@@ -226,7 +226,6 @@ def square_and_multiply(basis, potenz, mod):
     result += '{0}'.format(temp_result % mod)
 
     print(result)
-    return result
 
 
 def chinesischer_restsatz(r, m):
