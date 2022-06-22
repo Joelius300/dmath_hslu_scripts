@@ -59,22 +59,21 @@ def EEA(a, b):
         a, b = b, a % b
         print('{0:>5}{1:>6}{2:>6}{3:>6}'.format(a, q, u_old, v_old))
 
+    # von hier an ist a das ggT und b=0
+
     print()
-    print('{} * {} + {} * {} = 1'.format(u_old, orig_a, v_old, orig_b))
+    print('{} * {} + {} * {} = {}'.format(u_old, orig_a, v_old, orig_b, a))
 
-    x = None
-    y = None
-    if a == 1:  # a & b sind teilerfremd, höchstwahrscheinlich EEA für die modulare inverse verwendet -> positiv machen
-        x = u_old
-        while x < 0:
-            x += orig_b
-        y = v_old
-        while y < 0:
-            y += orig_a
+    x = u_old
+    while x < 0:
+        x += orig_b
+    y = v_old
+    while y < 0:
+        y += orig_a
 
-        print('Falls Modulare Inv gesucht: ')
-        print('   {0} * {1} === 1 mod {2}'.format(x, orig_a, orig_b))
-        print('   {0} * {1} === 1 mod {2}'.format(y, orig_b, orig_a))
+    print('Positive Kongruenzen')  # wenn a==1 sind das die Modularen Inversen
+    print('   {} * {} === {} mod {}'.format(x, orig_a, a, orig_b))
+    print('   {} * {} === {} mod {}'.format(y, orig_b, a, orig_a))
 
     return a, u_old, v_old, x, y
 
