@@ -1,6 +1,6 @@
 ## DMATH Python Scripts HSLU
 
-Micropython 2014 scripts for DMATH, which work on the TI-Nspire™ CX CAS (1, not 2).
+Micropython 2014 scripts for DMATH, which work on the (black) TI-Nspire™ CX CAS I (not tested on the (red) successor II).
 
 ### Rename all to .tns
 
